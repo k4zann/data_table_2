@@ -1113,7 +1113,7 @@ class DataTable2 extends DataTable {
                               child: SingleChildScrollView(
                                 controller: coreHorizontalController,
                                 scrollDirection: Axis.horizontal,
-                                child: addBottomMargin(coreTable)))))
+                                child: addBottomMargin(coreTable))))))
                   ]));
 
               fixedColumnAndCornerCol = fixedTopLeftCornerTable == null &&

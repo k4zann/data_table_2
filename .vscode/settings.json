@@ -6,5 +6,7 @@
     "markdown",
     "latex",
     "plaintext"
-  ]
+  ],
+    "dart.flutterSdkPath": "/Users/egistic/.puro/envs/stable/flutter",
+    "dart.sdkPath": "/Users/egistic/.puro/envs/stable/flutter/bin/cache/dart-sdk"
 }

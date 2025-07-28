@@ -1041,8 +1041,8 @@ class DataTable2 extends DataTable {
 
               var scrollBarTheme = Theme.of(context).scrollbarTheme;
               // flutter/lib/src/material/scrollbar.dart, scrollbar decides whther to create  Cupertino or Material scrollbar, Cupertino ignores themes
-              var isiOS = Theme.of(context).platform == TargetPlatform.iOS;
 
+              var isiOS = Theme.of(context).platform == TargetPlatform.iOS;
               // For iOS/Cupertino scrollbar
               fixedRowsAndCoreCol = Scrollbar(
                   thumbVisibility: isHorizontalScrollBarVisible ??
@@ -1074,23 +1074,46 @@ class DataTable2 extends DataTable {
                     Flexible(
                         fit: FlexFit.tight,
                         child: Scrollbar(
-                            thumbVisibility: isVerticalScrollBarVisible ??
+                          thumbVisibility: isVerticalScrollBarVisible ??
+                              (isiOS
+                                ? scrollBarTheme.thumbVisibility
+                                  ?.resolve({WidgetState.hovered})
+                                : null),
+                          trackVisibility: isVerticalScrollBarVisible ??
                                 (isiOS
-                                    ? scrollBarTheme.thumbVisibility
+                                    ? scrollBarTheme.trackVisibility
+                                        ?.resolve({WidgetState.hovered})
+                                    : null),
+                          thickness: (isiOS
+                            ? scrollBarTheme.thickness
+                              ?.resolve({WidgetState.hovered})
+                            : null),
+                          controller: coreVerticalController,
+                          scrollbarOrientation: ScrollbarOrientation.left,
+                          child: Scrollbar(
+                            thumbVisibility: isVerticalScrollBarVisible ??
+                              (isiOS
+                                ? scrollBarTheme.thumbVisibility
+                                  ?.resolve({WidgetState.hovered})
+                                : null),
+                            trackVisibility: isVerticalScrollBarVisible ??
+                                (isiOS
+                                    ? scrollBarTheme.trackVisibility
                                         ?.resolve({WidgetState.hovered})
                                     : null),
                             thickness: (isiOS
-                                ? scrollBarTheme.thickness
-                                    ?.resolve({WidgetState.hovered})
-                                : null),
+                              ? scrollBarTheme.thickness
+                                ?.resolve({WidgetState.hovered})
+                              : null),
+                            scrollbarOrientation: ScrollbarOrientation.right,
                             controller: coreVerticalController,
                             child: SingleChildScrollView(
-                                controller: coreVerticalController,
-                                scrollDirection: Axis.vertical,
-                                child: SingleChildScrollView(
-                                    controller: coreHorizontalController,
-                                    scrollDirection: Axis.horizontal,
-                                    child: addBottomMargin(coreTable)))))
+                              controller: coreVerticalController,
+                              scrollDirection: Axis.vertical,
+                              child: SingleChildScrollView(
+                                controller: coreHorizontalController,
+                                scrollDirection: Axis.horizontal,
+                                child: addBottomMargin(coreTable)))))
                   ]));
 
               fixedColumnAndCornerCol = fixedTopLeftCornerTable == null &&

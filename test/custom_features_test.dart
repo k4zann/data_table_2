@@ -27,7 +27,7 @@ void main() {
         'Horizontal scrollbar is visible if isHorizontalScrollBarVisible=true',
         (WidgetTester tester) async {
       await wrapWidgetSetSurf(tester,
-          buildTable(isHorizontalScrollBarVisible: true), const Size(250, 300));
+          buildTable(isHorizontalScrollBarVisible: true, minWidth: 500), const Size(250, 300));
 
       await tester.pumpAndSettle();
 
@@ -41,7 +41,7 @@ void main() {
           tester,
           buildTable(
               isVerticalScrollBarVisible: true,
-              isHorizontalScrollBarVisible: true),
+              isHorizontalScrollBarVisible: true, minWidth: 500),
           const Size(250, 300));
 
       await tester.pumpAndSettle();

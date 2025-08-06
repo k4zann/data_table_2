@@ -573,6 +573,17 @@ class DataTable2 extends DataTable {
     // assert(!_debugInteractive || debugCheckHasMaterial(context));
     assert(debugCheckHasMaterial(context));
 
+    // Check if DataTable2 is being used inside an AlertDialog
+    // This is not supported because AlertDialog uses intrinsic sizing
+    // which conflicts with LayoutBuilder's intrinsic dimension calculation
+    if (context.findAncestorWidgetOfExactType<AlertDialog>() != null) {
+      throw FlutterError(
+        'DataTable2 cannot be used inside an AlertDialog. '
+        'AlertDialog uses intrinsic sizing which conflicts with DataTable2\'s layout requirements. '
+        'Consider using a different dialog type or restructuring your layout.',
+      );
+    }
+
     final theme = Theme.of(context);
     final DataTableThemeData dataTableTheme = DataTableTheme.of(context);
     final effectiveHeadingRowColor = headingRowColor ?? theme.dataTableTheme.headingRowColor;
@@ -958,47 +969,44 @@ class DataTable2 extends DataTable {
               // For iOS/Cupertino scrollbar
 
 
-              fixedRowsAndCoreCol = Scrollbar(
-                  interactive: true,
-                  thumbVisibility: isHorizontalScrollBarVisible ??
-                      (isiOS ? scrollBarTheme.thumbVisibility?.resolve({WidgetState.hovered}) : null),
-                  trackVisibility: isHorizontalScrollBarVisible ??
-                      (isiOS ? scrollBarTheme.trackVisibility?.resolve({WidgetState.hovered}) : null),
-                  thickness: (isiOS ? scrollBarTheme.thickness?.resolve({WidgetState.hovered}) : null),
-                  controller: coreHorizontalController,
-                  scrollbarOrientation: ScrollbarOrientation.bottom,
-                  child: Column(mainAxisSize: MainAxisSize.min, children: [
-                    ScrollConfiguration(
-                        behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+              fixedRowsAndCoreCol = Column(mainAxisSize: MainAxisSize.min, children: [
+                Scrollbar(
+                    interactive: true,
+                    thumbVisibility: isHorizontalScrollBarVisible ??
+                        (isiOS ? scrollBarTheme.thumbVisibility?.resolve({WidgetState.hovered}) : null),
+                    trackVisibility: isHorizontalScrollBarVisible ??
+                        (isiOS ? scrollBarTheme.trackVisibility?.resolve({WidgetState.hovered}) : null),
+                    thickness: (isiOS ? scrollBarTheme.thickness?.resolve({WidgetState.hovered}) : null),
+                    controller: coreHorizontalController,
+                    scrollbarOrientation: ScrollbarOrientation.bottom,
+                    child: SingleChildScrollView(
+                        controller: fixedRowsHorizontalController,
+                        scrollDirection: Axis.horizontal,
+                        child: (fixedRowsTabel != null)
+                            ? fixedRowsTabel
+                            // WOrkaround for a bug when there's no horizontal scrollbar should there be no this SingleChildScrollView. I.e. originally this part was ommited and not scrollable was added to the column if not fixed top row was visible
+                            : SizedBox(
+                                height: 0,
+                                width: widths.fold<double>(0, (previousValue, value) => previousValue + value),
+                              ))),
+                Flexible(
+                    fit: FlexFit.tight,
+                    child: Scrollbar(
+                        thumbVisibility: isVerticalScrollBarVisible ??
+                            (isiOS ? scrollBarTheme.thumbVisibility?.resolve({WidgetState.hovered}) : null),
+                        trackVisibility: isVerticalScrollBarVisible ??
+                            (isiOS ? scrollBarTheme.trackVisibility?.resolve({WidgetState.hovered}) : null),
+                        thickness: (isiOS ? scrollBarTheme.thickness?.resolve({WidgetState.hovered}) : null),
+                        scrollbarOrientation: ScrollbarOrientation.right,
+                        controller: coreVerticalController,
                         child: SingleChildScrollView(
-                            controller: fixedRowsHorizontalController,
-                            scrollDirection: Axis.horizontal,
-                            child: (fixedRowsTabel != null)
-                                ? fixedRowsTabel
-                                // WOrkaround for a bug when there's no horizontal scrollbar should there be no this SingleChildScrollView. I.e. originally this part was ommited and not scrollable was added to the column if not fixed top row was visible
-                                : SizedBox(
-                                    height: 0,
-                                    width: widths.fold<double>(0, (previousValue, value) => previousValue + value),
-                                  ))),
-                    Flexible(
-                        fit: FlexFit.tight,
-                        child: Scrollbar(
-                            thumbVisibility: isVerticalScrollBarVisible ??
-                                (isiOS ? scrollBarTheme.thumbVisibility?.resolve({WidgetState.hovered}) : null),
-                            trackVisibility: isVerticalScrollBarVisible ??
-                                (isiOS ? scrollBarTheme.trackVisibility?.resolve({WidgetState.hovered}) : null),
-                            thickness: (isiOS ? scrollBarTheme.thickness?.resolve({WidgetState.hovered}) : null),
-                            scrollbarOrientation: ScrollbarOrientation.right,
                             controller: coreVerticalController,
+                            scrollDirection: Axis.vertical,
                             child: SingleChildScrollView(
-                                controller: coreVerticalController,
-                                scrollDirection: Axis.vertical,
-                                child: SingleChildScrollView(
-                                    controller: coreHorizontalController,
-                                    scrollDirection: Axis.horizontal,
-                                    child: addBottomMargin(coreTable)
-                                ))))
-                  ]));
+                                controller: coreHorizontalController,
+                                scrollDirection: Axis.horizontal,
+                                child: addBottomMargin(coreTable)))))
+              ]);
 
               fixedColumnAndCornerCol = fixedTopLeftCornerTable == null && fixedColumnsTable == null
                   ? null
